@@ -7,10 +7,11 @@ module ZK
     !!ENV['TRAVIS']
   end
 
-  @test_port ||= spawn_zookeeper? ? 21811 : 2181
+  @test_port ||= spawn_zookeeper? ? (27183..28_000).detect { |port| !system("nc -z localhost #{port}") } : 2181
+  @test_proxy_port ||= (@test_port + 1..28_000).detect { |port| !system("nc -z localhost #{port}") }
 
   class << self
-    attr_accessor :test_port
+    attr_accessor :test_port, :test_proxy_port
   end
 
   # argh, blah, this affects ZK.new everywhere (which is kind of the point, but

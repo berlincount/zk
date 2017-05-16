@@ -39,6 +39,7 @@ require 'zk/mongoid'
 require 'zk/client'
 require 'zk/pool'
 require 'zk/find'
+require 'zk/recipes/cache'
 
 module ZK
   silence_warnings do

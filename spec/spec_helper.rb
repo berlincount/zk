@@ -50,15 +50,60 @@ RSpec.configure do |config|
     config.before(:suite) do
       SpecGlobalLogger.logger.debug { "Starting zookeeper service" }
       ZK::Server.run do |c|
-        c.client_port = ZK.test_port
-        c.force_sync  = false
-        c.snap_count  = 1_000_000
+        c.client_port         = ZK.test_port
+        c.force_sync          = false
+        c.snap_count          = 1_000_000
+        c.max_session_timeout = 5_000 # ms
       end
     end
 
     config.after(:suite) do
       SpecGlobalLogger.logger.debug  { "stopping zookeeper service" }
       ZK::Server.shutdown
+    end
+
+    config.before(:each, zookeeper: true) do
+      ZK.open("#{ZK.default_host}:#{ZK.test_port}") do |zk|
+        zk.rm_rf("/test")
+        zk.mkdir_p("/test")
+      end
+    end
+
+    config.before(:each, proxy: true) do |group|
+      proxy_start(group.metadata[:throttle_bytes_per_sec])
+    end
+
+    config.after(:each, proxy: true) do
+      proxy_stop
+    end
+
+    def proxy_start(throttle_bytes_per_sec = nil)
+      limit = "-L #{throttle_bytes_per_sec}" if throttle_bytes_per_sec
+      spawn(%{socat -T 10 -d TCP-LISTEN:#{ZK.test_proxy_port},fork,reuseaddr,linger=1 SYSTEM:'pv -q #{limit} - | socat - "TCP:localhost:#{ZK.test_port}"'})
+    end
+
+    def proxy_stop
+      system("lsof -i TCP:#{ZK.test_proxy_port} -t | grep -v #{Process.pid} | xargs kill -9")
+    end
+
+    def spawn(cmd)
+      puts "+ #{cmd}" if ENV['ZK_DEBUG']
+      Kernel.spawn(cmd)
+    end
+
+    def system(cmd)
+      puts "+ #{cmd}" if ENV['ZK_DEBUG']
+      Kernel.system(cmd)
+    end
+
+    def almost_there(tries = 100)
+      i ||= 0
+      yield
+    rescue RSpec::Expectations::ExpectationNotMetError
+      raise if i > tries
+      sleep 0.1
+      i += 1
+      retry
     end
   end
 
