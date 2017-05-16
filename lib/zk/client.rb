@@ -57,4 +57,4 @@ require 'zk/client/unixisms'
 require 'zk/client/conveniences'
 require 'zk/client/base'
 require 'zk/client/threaded'
-
+require 'zk/client/caching'
