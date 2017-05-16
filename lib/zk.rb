@@ -46,13 +46,13 @@ module ZK
     ZK_ROOT = File.expand_path('../..', __FILE__).freeze
   end
 
-  unless defined?(KILL_TOKEN) 
+  unless defined?(KILL_TOKEN)
     # @private
-    KILL_TOKEN = Object.new 
+    KILL_TOKEN = Object.new
   end
 
   @@logger = nil unless defined? @@logger
- 
+
   @default_host   = 'localhost' unless @default_host
   @default_port   = 2181        unless @default_port
   @default_chroot = ''          unless @default_chroot
@@ -100,11 +100,11 @@ module ZK
   # is established, this is useful for registering connected-state handlers.
   #
   # Since 1.0, if you pass a chrooted host string, i.e. `localhost:2181/foo/bar/baz` this
-  # method will create two connections. The first will be short lived, and will create the 
+  # method will create two connections. The first will be short lived, and will create the
   # chroot path, the second will be the chrooted one and returned to the user. This is
   # meant as a convenience to users who want to use chrooted connections.
   #
-  # @note As it says in the ZooKeeper [documentation](http://zookeeper.apache.org/doc/r3.4.3/zookeeperProgrammers.html#ch_gotchas), 
+  # @note As it says in the ZooKeeper [documentation](http://zookeeper.apache.org/doc/r3.4.3/zookeeperProgrammers.html#ch_gotchas),
   #   if you are running a cluster: "The list of ZooKeeper servers used by the
   #   client must match the list of ZooKeeper servers that each ZooKeeper
   #   server has. Things can work, although not optimally, if the client list
@@ -113,7 +113,7 @@ module ZK
   #
   # @example Connection using defaults
   #
-  #   zk = ZK.new   # will connect to 'localhost:2181' 
+  #   zk = ZK.new   # will connect to 'localhost:2181'
   #
   # @example Connection to a single server
   #
@@ -124,7 +124,7 @@ module ZK
   #   zk = ZK.new('localhost:2181/look/around/you')
   #
   # @example Connection to multiple servers (a cluster)
-  #   
+  #
   #   zk = ZK.new('server1:2181,server2:2181,server3:2181')
   #
   # @example Connection to multiple servers with a chroot (chroot will automatically be creatd)
@@ -136,7 +136,7 @@ module ZK
   #   zk = ZK.new('localhost:2181/look/around/you', :chroot => :check)
   #
   # @example Connection to a single server, use a chrooted connection, do not check for validity, do not create
-  # 
+  #
   #   zk = ZK.new('localhost:2181/look/around/you', :chroot => :do_nothing)
   #
   # @example Connection to a single server, chroot path specified as an option
@@ -153,11 +153,11 @@ module ZK
   #
   #     * `:create` (the default), then we will use a secondary (short-lived)
   #     un-chrooted connection to ensure that the path exists before returning
-  #     the chrooted connection. 
+  #     the chrooted connection.
   #
   #     * `:check`, we will not attempt to create the connection, but rather
   #     will raise a {Exceptions::ChrootPathDoesNotExistError
-  #     ChrootPathDoesNotExistError} if the path doesn't exist. 
+  #     ChrootPathDoesNotExistError} if the path doesn't exist.
   #
   #     * `:do_nothing`, we do not create the path and furthermore we do not
   #     perform the check (the `<= 0.9` behavior).
@@ -170,7 +170,7 @@ module ZK
   #     {ZK::Client::Threaded#initialize Threaded.new} directly. You probably
   #     also hate happiness and laughter.
   #
-  #   @option opts [:single,:per_callback] :thread (:single) see {ZK::Client::Threaded#initialize} 
+  #   @option opts [:single,:per_callback] :thread (:single) see {ZK::Client::Threaded#initialize}
   #     for a discussion of what these options mean
   #
   #   @raise [ChrootPathDoesNotExistError] if a chroot path is specified,
@@ -209,7 +209,7 @@ module ZK
     yield cnx
   ensure
     if cnx
-      cnx.close! 
+      cnx.close!
       cnx.wait_until_closed(30) # XXX: hardcoded here, do not hang forever
     end
   end
@@ -261,7 +261,7 @@ module ZK
     #   added)
     #
     def self.do_chroot_setup(cnx_str, chroot_opt=:create)
-      # "it should set up the chroot for us," they says. 
+      # "it should set up the chroot for us," they says.
       # "it's confusing if it doesn't do that for us," they says.
       # sheesh, look at this...
 
@@ -285,7 +285,7 @@ module ZK
       when :create, :check
         # no-op, valid options for later
       else
-        raise ArgumentError, ":chroot must be one of :create, :check, :do_nothing, or a String, not: #{chroot_opt.inspect}" 
+        raise ArgumentError, ":chroot must be one of :create, :check, :do_nothing, or a String, not: #{chroot_opt.inspect}"
       end
 
       return cnx_str unless chroot_path  # if by this point, we don't have a chroot_path, then there isn't one to be had
@@ -299,7 +299,7 @@ module ZK
             zk.mkdir_p(chroot_path)     # ...get that for you
           else                          # careful with that axe
             raise Exceptions::ChrootPathDoesNotExistError.new(host, chroot_path)  # ...eugene
-          end                                                                               
+          end
         end
       end
 

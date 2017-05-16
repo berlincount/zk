@@ -6,7 +6,7 @@ shared_examples_for 'client' do
       @path_ary = %W[#{base} test mkdir_p path creation]
       @bogus_path = File.join('', *@path_ary)
     end
-   
+
     it %[should create all intermediate paths for the path givem] do
       @zk.should_not be_exists(@bogus_path)
       @zk.should_not be_exists(File.dirname(@bogus_path))
@@ -140,7 +140,7 @@ shared_examples_for 'client' do
       end
 
       def create_args(opts={})
-        proc do 
+        proc do
           begin
             @zk.create(path, opts.merge(:or => :set))
           ensure
@@ -197,7 +197,7 @@ shared_examples_for 'client' do
       before do
         @missing_path = '/thispathdoesnotexist'
         begin
-          @zk.delete(@missing_path) 
+          @zk.delete(@missing_path)
         rescue ZK::Exceptions::NoNode
         end
       end
@@ -296,22 +296,22 @@ shared_examples_for 'client' do
       end
 
 #       after do
-#         logger.info { "AFTER EACH" } 
+#         logger.info { "AFTER EACH" }
 #         @zk.delete(@path)
 #       end
 
       def ensure_event_delivery!
         @sub ||= @zk.event_handler.register(@path) do |event|
-          logger.debug { "got event: #{event.inspect}" } 
+          logger.debug { "got event: #{event.inspect}" }
           @queue << event
         end
 
         @zk.exists?(@path, :watch => true).should be_false
         @zk.create(@path)
 
-        logger.debug { "waiting for event delivery" } 
+        logger.debug { "waiting for event delivery" }
 
-        wait_until(2) do 
+        wait_until(2) do
           begin
             event = @queue.pop(true)
             logger.debug { "got event: #{event}" }
@@ -357,14 +357,14 @@ shared_examples_for 'client' do
       # note: we can't trust the events to be delivered in any particular order
       # since they're happening on two different threads. if we see we're connected
       # in the beginning, that there was a disconnection, then a reopen, that's
-      # probably fine. 
+      # probably fine.
       #
       # we also check that the session_id was changed, which is the desired effect
 
       orig_session_id = @zk.session_id
       @zk.should be_connected
 
-      props = { 
+      props = {
         :session_event?   => true,
         :node_event?      => false,
         :client_invalid?  => true,
@@ -392,7 +392,7 @@ shared_examples_for 'client' do
         @zk.event_handler.process(bogus_event)
       end
 
-      logger.debug { "events: #{events.inspect}" } 
+      logger.debug { "events: #{events.inspect}" }
 
       mutex.synchronize do
         time_to_stop = Time.now + 2
@@ -410,7 +410,7 @@ shared_examples_for 'client' do
       @ary = []
 
       @zk.on_exception { |exc| @ary << exc }
-        
+
       @zk.defer { raise "ZOMG!" }
 
       wait_while(2) { @ary.empty? }
