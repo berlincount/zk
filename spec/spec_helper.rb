@@ -22,8 +22,9 @@ Dir[File.expand_path("../{support,shared}/**/*.rb", __FILE__)].sort.each {|f| re
 $stderr.sync = true
 
 RSpec.configure do |config|
-  config.mock_with :flexmock
-  config.include(FlexMock::ArgumentTypes)
+  config.expect_with :rspec do |c|
+    c.syntax = :expect
+  end
 
   [WaitWatchers, SpecGlobalLogger, Pendings].each do |mod|
     config.include(mod)
@@ -77,7 +78,7 @@ RSpec.configure do |config|
       leak_check(ZK::ThreadedCallback, &:alive?)
       leak_check(ZK::Threadpool, &:alive?)
       leak_check(Thread) { |th| Thread.current != th && th.alive? }
-      ZK::ForkHook.hooks.values.flatten.should be_empty
+      expect(ZK::ForkHook.hooks.values.flatten).to be_empty
     end
   end
 end
